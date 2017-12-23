@@ -14,6 +14,7 @@ Sample config file:
 }
 
 """
+import json
 
 from entities.account import Account
 
@@ -24,5 +25,6 @@ class ConfigReader():
     def __init__(self, config_fpath):
         self.config_fpath = config_fpath
 
-    def get_configs():
-        pass
+    def get_configs(self):
+        data = json.load(open(self.config_fpath))
+        print(data)
