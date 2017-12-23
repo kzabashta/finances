@@ -14,3 +14,15 @@ Sample config file:
 }
 
 """
+
+from entities.account import Account
+
+class ConfigReader():
+    
+    config_fpath = None
+
+    def __init__(self, config_fpath):
+        self.config_fpath = config_fpath
+
+    def get_configs():
+        pass

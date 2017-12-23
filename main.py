@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from parsers.tangerine import TangerineParser
+from initializer import config_reader
 
-tg = TangerineParser('chequing')
-tg.parse_file('statements/tangerine/chequing.csv')
+if __name__ == '__main__':
+    config_reader = config_reader.ConfigReader('./statements/config.json')
