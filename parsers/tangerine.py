@@ -11,4 +11,4 @@ class TangerineParser(GenericParser):
 
     def parse_file(self, fpath):
         df = pd.read_csv(fpath, names=['date', 'transaction', 'name', 'memo', 'amount'], skiprows=[0])
-        print(df)
+        print(df['amount'].sum())
