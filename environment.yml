@@ -1,0 +1,5 @@
+name: finances
+channels:
+- defaults
+prefix: /Users/kosta/anaconda/envs/finances
+
