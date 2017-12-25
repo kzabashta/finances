@@ -20,6 +20,7 @@ from entities.account import Account
 
 class ConfigReader():
     
+    # tx_fpath, file_cols, alias_cols
     config_fpath = None
 
     def __init__(self, config_fpath):
@@ -27,4 +28,10 @@ class ConfigReader():
 
     def get_configs(self):
         data = json.load(open(self.config_fpath))
-        print(data)
+        accounts = []
+        for key, val in data.items():
+            account = Account(key)
+            account.file_cols = val['columns']
+            account.alias_cols = val['aliases']
+            accounts.append(account)
+        return accounts

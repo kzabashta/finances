@@ -2,12 +2,9 @@ import glob
 import pandas as pd
 
 class Account():
-
-    tx_fpath = None
-    file_cols = None
-    alias_cols = None
-
-    def __init__(self, tx_fpath, file_cols, alias_cols):
+    
+    def __init__(self, name, tx_fpath=None, file_cols=None, alias_cols=None):
+        self.name = name
         self.tx_fpath = tx_fpath
         self.file_cols = file_cols
         self.alias_cols = alias_cols
