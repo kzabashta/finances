@@ -31,7 +31,10 @@ class ConfigReader():
         accounts = []
         for key, val in data.items():
             account = Account(key)
+            account.tx_fpath = val['path']
             account.file_cols = val['columns']
             account.alias_cols = val['aliases']
+            account.is_header = val['is_header']
+            account.amount_split = val['amount_split']
             accounts.append(account)
         return accounts
