@@ -4,13 +4,14 @@ import matplotlib.pylab as plt
 
 class Account():
     
-    def __init__(self, name, tx_fpath=None, file_cols=None, alias_cols=None, is_header=None, amount_split=None):
+    def __init__(self, name, tx_fpath=None, file_cols=None, alias_cols=None, is_header=None, amount_split=None, ratio=None):
         self.name = name
         self.tx_fpath = tx_fpath
         self.file_cols = file_cols
         self.alias_cols = alias_cols
         self.is_header = is_header
         self.amount_split = amount_split
+        self.ratio = ratio
     
     def init_account(self):
         
@@ -30,13 +31,14 @@ class Account():
                 df['amount'] = df.apply(get_amount, axis=1)
             df = df.rename(columns=self.alias_cols)
             df['tx_date'] = pd.to_datetime(df['tx_date'])
-            df = df.sort_values('tx_date')
-            df = df.set_index(pd.DatetimeIndex(df['tx_date']))
-            df['cum_sum'] = df.tx_amount.cumsum()
+            df['tx_amount'] *= self.ratio
             dfs.append(df)
 
         # Concatenate all data into one DataFrame
-        self.transactions = pd.concat(dfs, ignore_index=True)
+        self.transactions = pd.concat(dfs)
+        self.transactions = self.transactions.sort_values('tx_date')
+        self.transactions = self.transactions.set_index(pd.DatetimeIndex(self.transactions['tx_date']))
+        self.transactions['cum_sum'] = self.transactions.tx_amount.cumsum()
 
     def save_figure(self):
         x = self.transactions['tx_date']

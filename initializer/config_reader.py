@@ -36,5 +36,6 @@ class ConfigReader():
             account.alias_cols = val['aliases']
             account.is_header = val['is_header']
             account.amount_split = val['amount_split']
+            account.ratio = val['ratio']
             accounts.append(account)
         return accounts
