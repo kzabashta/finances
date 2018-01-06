@@ -7,3 +7,4 @@ if __name__ == '__main__':
     accounts = config_reader.get_configs()
     for account in accounts:
         account.init_account()
+        account.save_figure()
