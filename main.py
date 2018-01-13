@@ -60,9 +60,9 @@ def save_interpolated_figure(df):
     plt.close(fig)
 
 def arima_predict(ts):
-    p = d = q = range(0, 2)
+    p = d = q = range(0, 5)
     pdq = list(itertools.product(p, d, q))
-    seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
+    seasonal_pdq = [(x[0], x[1], x[2], 24) for x in list(itertools.product(p, d, q))]
     lowest_pdq = lowest_seasonal_pdq = lowest_aic = None
     for param in pdq:
         for param_seasonal in seasonal_pdq:
@@ -94,9 +94,11 @@ def arima_predict(ts):
     print(results.summary().tables[1])
     results.plot_diagnostics(figsize=(15, 12))
     plt.savefig("plots/ARIMA_diagnostic.png", dpi=100)
+    plt.clf()
     pred = results.get_prediction(start=pd.to_datetime('2017-6-15'), dynamic=False)
     pred_ci = pred.conf_int()
 
+    
     ax = ts.plot(label='observed')
     pred.predicted_mean.plot(ax=ax, label='One-step ahead Forecast', alpha=.7)
 
@@ -105,10 +107,24 @@ def arima_predict(ts):
                     pred_ci.iloc[:, 1], color='k', alpha=.2)
 
     ax.set_xlabel('Date')
-    ax.set_ylabel('CO2 Levels')
+    ax.set_ylabel('Wealth')
     plt.legend()
+    plt.savefig("plots/forecast_validation.png", dpi=100)
+    plt.clf()
 
-    plt.show()
+    pred_uc = results.get_forecast(steps=50)
+    pred_ci = pred_uc.conf_int()
+    ax = ts.plot(label='observed', figsize=(20, 15))
+    pred_uc.predicted_mean.plot(ax=ax, label='Forecast')
+    ax.fill_between(pred_ci.index,
+                    pred_ci.iloc[:, 0],
+                    pred_ci.iloc[:, 1], color='k', alpha=.25)
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Wealth')
+
+    plt.legend()
+    plt.savefig("plots/forecast.png", dpi=100)
+    plt.clf()
 
 if __name__ == '__main__':
     config_reader = config_reader.ConfigReader('./statements/config.json')
