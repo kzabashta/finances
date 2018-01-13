@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
+import itertools
 import datetime
 import pandas as pd
 import matplotlib.pylab as plt
+import statsmodels.api as sm
+plt.style.use('dark_background')
+
 
 from initializer import config_reader
 
@@ -37,6 +41,25 @@ def save_combined_figure(df):
     fig.savefig("plots/combined.png", dpi=100)
     plt.close(fig)
 
+def save_interpolated_figure(df):
+    df = df[df['tx_date'] >= CLEAN_DATE]
+    x = df['tx_date']
+    y = df['cum_sum']
+
+    ts = pd.Series(y, index=x)
+    ts = ts.resample('D').mean()
+
+    ts = ts.interpolate(method='spline', order=3)
+    
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+    ax.plot(ts)
+    fig.suptitle('Total holdings are $%.2f as of %s' % (df.cum_sum.iloc[-1], df.tx_date.iloc[-1].strftime('%Y/%m/%d')))
+    plt.xlabel('Date')
+    plt.ylabel('Holdings')
+    fig.set_size_inches(18.5, 18.5)
+    fig.savefig("plots/interpolated.png", dpi=100)
+    plt.close(fig)
+
 if __name__ == '__main__':
     config_reader = config_reader.ConfigReader('./statements/config.json')
     accounts = config_reader.get_configs()
@@ -62,3 +85,4 @@ if __name__ == '__main__':
     combined_tx['tx_date'] = pd.to_datetime(combined_tx.index)
     save_accounts_figure(accounts)
     save_combined_figure(combined_tx)
+    save_interpolated_figure(combined_tx)
