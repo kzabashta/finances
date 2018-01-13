@@ -45,7 +45,7 @@ def save_interpolated_figure(df):
     y = df['cum_sum']
 
     ts = pd.Series(y, index=x)
-    ts = ts.resample('D').mean()
+    ts = ts.resample('W-MON').mean()
 
     ts = ts.interpolate(method='spline', order=3)
     arima_predict(ts)
@@ -60,9 +60,9 @@ def save_interpolated_figure(df):
     plt.close(fig)
 
 def arima_predict(ts):
-    p = d = q = range(0, 5)
+    p = d = q = range(0, 3)
     pdq = list(itertools.product(p, d, q))
-    seasonal_pdq = [(x[0], x[1], x[2], 24) for x in list(itertools.product(p, d, q))]
+    seasonal_pdq = [(x[0], x[1], x[2], 52) for x in list(itertools.product(p, d, q))]
     lowest_pdq = lowest_seasonal_pdq = lowest_aic = None
     for param in pdq:
         for param_seasonal in seasonal_pdq:
@@ -95,7 +95,7 @@ def arima_predict(ts):
     results.plot_diagnostics(figsize=(15, 12))
     plt.savefig("plots/ARIMA_diagnostic.png", dpi=100)
     plt.clf()
-    pred = results.get_prediction(start=pd.to_datetime('2017-6-15'), dynamic=False)
+    pred = results.get_prediction(start=pd.to_datetime('2017-6-19'), dynamic=True)
     pred_ci = pred.conf_int()
 
     
