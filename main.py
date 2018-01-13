@@ -5,8 +5,6 @@ import datetime
 import pandas as pd
 import matplotlib.pylab as plt
 import statsmodels.api as sm
-plt.style.use('dark_background')
-
 
 from initializer import config_reader
 
@@ -79,13 +77,13 @@ def arima_predict(ts):
                 if lowest_aic is None:
                     lowest_aic = results.aic
                 elif results.aic < lowest_aic:
-                    lowest_pdq = pdq
-                    lowest_seasonal_pdq = seasonal_pdq
+                    lowest_pdq = param
+                    lowest_seasonal_pdq = param_seasonal
                     lowest_aic = lowest_aic
             except:
                 continue
     
-    mod = sm.tsa.statespace.SARIMAX(y,
+    mod = sm.tsa.statespace.SARIMAX(ts,
                                 order=lowest_pdq,
                                 seasonal_order=lowest_seasonal_pdq,
                                 enforce_stationarity=False,
@@ -94,6 +92,23 @@ def arima_predict(ts):
     results = mod.fit()
 
     print(results.summary().tables[1])
+    results.plot_diagnostics(figsize=(15, 12))
+    plt.savefig("plots/ARIMA_diagnostic.png", dpi=100)
+    pred = results.get_prediction(start=pd.to_datetime('2017-6-15'), dynamic=False)
+    pred_ci = pred.conf_int()
+
+    ax = ts.plot(label='observed')
+    pred.predicted_mean.plot(ax=ax, label='One-step ahead Forecast', alpha=.7)
+
+    ax.fill_between(pred_ci.index,
+                    pred_ci.iloc[:, 0],
+                    pred_ci.iloc[:, 1], color='k', alpha=.2)
+
+    ax.set_xlabel('Date')
+    ax.set_ylabel('CO2 Levels')
+    plt.legend()
+
+    plt.show()
 
 if __name__ == '__main__':
     config_reader = config_reader.ConfigReader('./statements/config.json')
