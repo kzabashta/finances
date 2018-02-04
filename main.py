@@ -5,10 +5,13 @@ import datetime
 import pandas as pd
 import matplotlib.pylab as plt
 import statsmodels.api as sm
+import sqlite3
 
 from initializer import config_reader
 
-CLEAN_DATE = datetime.date(2016,1,31)
+plt.style.use('ggplot')
+
+CLEAN_DATE = datetime.date(2010,1,31)
 
 def save_accounts_figure(accounts):
     fig = plt.figure()
@@ -45,10 +48,11 @@ def save_interpolated_figure(df):
     y = df['cum_sum']
 
     ts = pd.Series(y, index=x)
-    ts = ts.resample('W-MON').mean()
+    ts = pd.rolling_mean(ts.resample("M", fill_method="ffill"), window=12, min_periods=1)
+    #ts = ts.resample('M').mean()
 
-    ts = ts.interpolate(method='spline', order=3)
-    arima_predict(ts)
+    ts = ts.interpolate(method='piecewise_polynomial', order=3)
+    
     
     fig, ax = plt.subplots(nrows=1, ncols=1)
     ax.plot(ts)
@@ -59,10 +63,12 @@ def save_interpolated_figure(df):
     fig.savefig("plots/interpolated.png", dpi=100)
     plt.close(fig)
 
+    #arima_predict(ts)
+
 def arima_predict(ts):
     p = d = q = range(0, 3)
     pdq = list(itertools.product(p, d, q))
-    seasonal_pdq = [(x[0], x[1], x[2], 52) for x in list(itertools.product(p, d, q))]
+    seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
     lowest_pdq = lowest_seasonal_pdq = lowest_aic = None
     for param in pdq:
         for param_seasonal in seasonal_pdq:
@@ -95,7 +101,8 @@ def arima_predict(ts):
     results.plot_diagnostics(figsize=(15, 12))
     plt.savefig("plots/ARIMA_diagnostic.png", dpi=100)
     plt.clf()
-    pred = results.get_prediction(start=pd.to_datetime('2017-6-19'), dynamic=True)
+    print(ts)
+    pred = results.get_prediction(start=pd.to_datetime('2017-6-30'), dynamic=True)
     pred_ci = pred.conf_int()
 
     
@@ -112,7 +119,7 @@ def arima_predict(ts):
     plt.savefig("plots/forecast_validation.png", dpi=100)
     plt.clf()
 
-    pred_uc = results.get_forecast(steps=50)
+    pred_uc = results.get_forecast(steps=24)
     pred_ci = pred_uc.conf_int()
     ax = ts.plot(label='observed', figsize=(20, 15))
     pred_uc.predicted_mean.plot(ax=ax, label='Forecast')
@@ -125,6 +132,11 @@ def arima_predict(ts):
     plt.legend()
     plt.savefig("plots/forecast.png", dpi=100)
     plt.clf()
+
+def save_to_db(df):
+    conn = sqlite3.connect('transactions.db')
+    df.to_sql('transactions', conn, if_exists='replace')
+    df.to_csv('transactions.csv')
 
 if __name__ == '__main__':
     config_reader = config_reader.ConfigReader('./statements/config.json')
@@ -148,7 +160,9 @@ if __name__ == '__main__':
     combined_tx = combined_tx.set_index(pd.DatetimeIndex(combined_tx['tx_date']))
     combined_tx = combined_tx.groupby(combined_tx.index).sum()
     combined_tx['cum_sum'] = combined_tx.tx_amount.cumsum()
+    save_to_db(combined_tx)
     combined_tx['tx_date'] = pd.to_datetime(combined_tx.index)
     save_accounts_figure(accounts)
     save_combined_figure(combined_tx)
     save_interpolated_figure(combined_tx)
+    
