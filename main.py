@@ -20,9 +20,9 @@ def save_accounts_figure(accounts):
         ax = fig.add_subplot(len(accounts) / 2 + 1, 2, i+1)
         ax.set_title('%s has $%.2f as of %s' % (accounts[i].name, 
             accounts[i].transactions.cum_sum.iloc[-1], 
-            accounts[i].transactions.tx_date.iloc[-1].strftime('%Y/%m/%d')))
+            accounts[i].transactions.index[-1].strftime('%Y/%m/%d')))
 
-        x = accounts[i].transactions['tx_date']
+        x = accounts[i].transactions.index
         y = accounts[i].transactions['cum_sum']
         ax.plot(x, y)
     fig.set_size_inches(18.5, 18.5)
@@ -48,7 +48,7 @@ def save_interpolated_figure(df):
     y = df['cum_sum']
 
     ts = pd.Series(y, index=x)
-    ts = pd.rolling_mean(ts.resample("M", fill_method="ffill"), window=12, min_periods=1)
+    ts = ts.resample("M").ffill().rolling(center=False, window=12, min_periods=1).mean()
     #ts = ts.resample('M').mean()
 
     ts = ts.interpolate(method='piecewise_polynomial', order=3)
@@ -134,8 +134,8 @@ def arima_predict(ts):
     plt.clf()
 
 def save_to_db(df):
-    conn = sqlite3.connect('transactions.db')
-    df.to_sql('transactions', conn, if_exists='replace')
+    #conn = sqlite3.connect('transactions.db')
+    #df.to_sql('transactions', conn, if_exists='replace')
     df.to_csv('transactions.csv')
 
 if __name__ == '__main__':
@@ -143,24 +143,17 @@ if __name__ == '__main__':
     accounts = config_reader.get_configs()
     
     dfs = []
-    col_list = ['tx_date', 'tx_amount']
+    col_list = ['tx_amount', 'tx_description', 'account']
 
     for account in accounts:
         account.init_account()
         dfs.append(account.transactions[col_list])
-    
-    """
-    combined_tx = pd.concat(dfs, ignore_index=True)
-    combined_tx = combined_tx.sort_values('tx_date')
-    combined_tx = combined_tx.set_index(pd.DatetimeIndex(combined_tx['tx_date']))
-    combined_tx['cum_sum'] = combined_tx.tx_amount.cumsum()
-    """
+
     combined_tx = pd.concat(dfs)
-    combined_tx = combined_tx.sort_values('tx_date')
-    combined_tx = combined_tx.set_index(pd.DatetimeIndex(combined_tx['tx_date']))
+    combined_tx.sort_index(inplace=True)
+    save_to_db(combined_tx)
     combined_tx = combined_tx.groupby(combined_tx.index).sum()
     combined_tx['cum_sum'] = combined_tx.tx_amount.cumsum()
-    save_to_db(combined_tx)
     combined_tx['tx_date'] = pd.to_datetime(combined_tx.index)
     save_accounts_figure(accounts)
     save_combined_figure(combined_tx)

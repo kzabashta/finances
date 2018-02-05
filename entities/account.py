@@ -32,12 +32,14 @@ class Account():
             df = df.rename(columns=self.alias_cols)
             df['tx_date'] = pd.to_datetime(df['tx_date'])
             df['tx_amount'] *= self.ratio
+            df['account'] = self.name
             dfs.append(df)
 
         # Concatenate all data into one DataFrame
         self.transactions = pd.concat(dfs)
-        self.transactions = self.transactions.sort_values('tx_date')
-        self.transactions = self.transactions.set_index(pd.DatetimeIndex(self.transactions['tx_date']))
+        self.transactions['tx_date'] = pd.to_datetime(self.transactions['tx_date'])
+        self.transactions = self.transactions.set_index('tx_date')
+        self.transactions.sort_index(inplace=True)
         self.transactions['cum_sum'] = self.transactions.tx_amount.cumsum()
 
     def save_figure(self):
