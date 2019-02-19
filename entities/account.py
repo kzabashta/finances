@@ -28,7 +28,7 @@ class Account():
 
         for filename in filenames:
             logging.debug('Processing file %s' % filename)
-            skiprows = [0] if self.is_header else None
+            skiprows = 1 if self.is_header else None
             df = pd.read_csv(filename, names=self.file_cols, index_col=False, skiprows=skiprows, header=None)
             if self.amount_split:
                 df['amount'] = df.apply(get_amount, axis=1)
