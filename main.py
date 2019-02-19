@@ -12,8 +12,11 @@ from initializer import config_reader
 
 plt.style.use('ggplot')
 
-CLEAN_DATE = datetime.date(2010,1,31)
+CLEAN_DATE = pd.Timestamp(datetime.date(2010,1,31))
 COL_LIST = ['tx_amount', 'tx_description', 'account']
+
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
 
 def save_accounts_figure(accounts):
     fig = plt.figure()
