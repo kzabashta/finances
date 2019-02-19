@@ -3,12 +3,27 @@ Sample config file:
 
 {
     "tangerine_chequing": {
-        "path": "tangerine/chequing.csv",
+        "path": "/Users/kzabashta/dev/finances/statements/tangerine/chequing",
         "columns": ["date", "transaction", "name", "memo", "amount"],
+        "is_header": true,
+        "amount_split": false,
+        "ratio": 1,
         "aliases": {
-            "tx_date": "date",
-            "tx_description": "memo",
-            "amount": "amount"
+            "date": "tx_date",
+            "memo": "tx_description",
+            "amount": "tx_amount"
+        }
+    },
+    "tangerine_savings": {
+        "path": "/Users/kzabashta/dev/finances/statements/tangerine/savings",
+        "columns": ["date", "transaction", "name", "memo", "amount"],
+        "is_header": true,
+        "amount_split": false,
+        "ratio": 1,
+        "aliases": {
+            "date": "tx_date",
+            "memo": "tx_description",
+            "amount": "tx_amount"
         }
     }
 }
