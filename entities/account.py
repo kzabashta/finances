@@ -23,15 +23,8 @@ class Account():
                 return -row['amount_debit']
             else:
                 return row['amount_credit']
-
-        transaction_dfs = []
-        transaction_filenames = glob.glob(self.tx_fpath + "/*.csv")
-
-        for transaction_filename in transaction_filenames:
-            logging.debug('Processing file %s' % transaction_filename)
-
-            skiprows = 1 if self.is_header else None
-            df = pd.read_csv(transaction_filename, names=self.file_cols, index_col=False, skiprows=skiprows, header=None)
+        
+        def transform_df(df):
             if self.amount_split:
                 df['amount'] = df.apply(get_amount, axis=1)
             df = df.rename(columns=self.alias_cols)
@@ -39,14 +32,22 @@ class Account():
             df['tx_amount'] *= self.ratio
             df['account'] = self.name
             df['hash'] = df.apply(lambda x: hash(tuple(x)), axis = 1)
+            return df
+
+        transaction_dfs = []
+        transaction_filenames = glob.glob(self.tx_fpath + "/*.csv")
+
+        for transaction_filename in transaction_filenames:
+            logging.debug('Processing file %s' % transaction_filename)
+            skiprows = 1 if self.is_header else None
+            df = pd.read_csv(transaction_filename, names=self.file_cols, index_col=False, skiprows=skiprows, header=None)
+            df = transform_df(df)
             transaction_dfs.append(df)
 
         return pd.concat(transaction_dfs)
 
     def __init_transactions(self):
-        # Concatenate all data into one DataFrame
         transactions = self.__read_transactions()
-        transactions['tx_date'] = pd.to_datetime(transactions['tx_date'])
         transactions = transactions.set_index('tx_date')
         transactions.sort_index(inplace=True)
         
