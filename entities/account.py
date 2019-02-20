@@ -1,12 +1,12 @@
 import glob
 import logging
-
 import pandas as pd
 import matplotlib.pylab as plt
 
 class Account():
     
-    def __init__(self, name, tx_fpath=None, file_cols=None, alias_cols=None, is_header=None, amount_split=None, ratio=None):
+    def __init__(self, name, tx_fpath=None, file_cols=None, 
+                 alias_cols=None, is_header=None, amount_split=None, ratio=None):
         self.name = name
         self.tx_fpath = tx_fpath
         self.file_cols = file_cols
