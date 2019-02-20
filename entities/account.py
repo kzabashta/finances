@@ -14,9 +14,10 @@ class Account():
         self.is_header = is_header
         self.amount_split = amount_split
         self.ratio = ratio
+
+        self.transactions = self.__init_transactions()
     
-    def init_account(self):
-        
+    def __read_transactions(self):
         def get_amount(row):
             if pd.isnull(row['amount_credit']):
                 return -row['amount_debit']
@@ -39,19 +40,26 @@ class Account():
             df['hash'] = df.apply(lambda x: hash(tuple(x)), axis = 1)
             dfs.append(df)
 
+        return pd.concat(dfs)
+
+    def __init_transactions(self):
+
+
         # Concatenate all data into one DataFrame
-        self.transactions = pd.concat(dfs)
-        self.transactions['tx_date'] = pd.to_datetime(self.transactions['tx_date'])
-        self.transactions = self.transactions.set_index('tx_date')
-        self.transactions.sort_index(inplace=True)
+        transactions = self.__read_transactions()
+        transactions['tx_date'] = pd.to_datetime(transactions['tx_date'])
+        transactions = transactions.set_index('tx_date')
+        transactions.sort_index(inplace=True)
         
         # Remove duplicates
-        deduped_txs = self.transactions.drop_duplicates(subset='hash')
-        duplicate_count = self.transactions.shape[0] - deduped_txs.shape[0]
-        self.transactions = deduped_txs
+        deduped_txs = transactions.drop_duplicates(subset='hash')
+        duplicate_count = transactions.shape[0] - deduped_txs.shape[0]
+        transactions = deduped_txs
         if duplicate_count > 0:
             logging.warning('Found %i duplicates in %s account, they have been removed' 
                 % (duplicate_count, self.name))
+        
+        return transactions
 
     def __str__(self):
         return 'Account: %s' % self.name

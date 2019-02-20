@@ -45,12 +45,8 @@ class ConfigReader():
         data = json.load(open(self.config_fpath))
         accounts = []
         for key, val in data.items():
-            account = Account(key)
-            account.tx_fpath = val['path']
-            account.file_cols = val['columns']
-            account.alias_cols = val['aliases']
-            account.is_header = val['is_header']
-            account.amount_split = val['amount_split']
-            account.ratio = val['ratio']
+            account = Account(name=key, tx_fpath = val['path'], file_cols=val['columns'],
+                              alias_cols=val['aliases'], is_header=val['is_header'],
+                              amount_split=val['amount_split'], ratio=val['ratio'])
             accounts.append(account)
         return accounts

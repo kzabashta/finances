@@ -154,8 +154,6 @@ if __name__ == '__main__':
     account_dfs = []
 
     for account in accounts:
-        logging.info('Processing account %s' % account)
-        account.init_account()
         account_dfs.append(account.transactions[COL_LIST])
 
     # Process the combined transactions
